@@ -42,7 +42,8 @@ def run_once():
     return True
   modules = {}
   for finding in findings:
-    for trace in finding.get('trace', []):
+    if finding.get('trace'):
+      trace = finding['trace'][0]
       mod = modules.setdefault(trace['module'], (set(), set(), set()))
       mod[0].add(trace['version'])
       mod[1].add(finding['fixed_version'])
