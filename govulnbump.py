@@ -29,12 +29,12 @@ def govulncheck():
       if 'finding' in j:
         findings.append(j['finding'])
   if check.wait() != 0 or json_lines:
-    return None
+    raise subprocess.CalledProcessError(check.returncode, cmd)
   return findings
 
 def run_ext(*cmd):
   print('+ ' + shlex.join(cmd))
-  subprocess.run(cmd)
+  subprocess.run(cmd).check_returncode()
 
 def run_once():
   findings = govulncheck()
