@@ -1,10 +1,13 @@
+ARG PYTHON_IMAGE=python:3.12
+
 FROM golang:1.21 AS golang
 
-FROM python:3.12
+FROM ${PYTHON_IMAGE}
 
-RUN pip install --no-cache-dir looseversion==1.3.0
+RUN pip3 install --no-cache-dir looseversion==1.3.0
 COPY --chmod=755 govulnbump.py /usr/local/bin/govulnbump
 
+RUN rm -rf /usr/local/go
 COPY --from=golang /usr/local/go /usr/local/go
 RUN mkdir -p /go /gocache
 RUN chmod a+rwx /gocache
