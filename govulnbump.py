@@ -1,14 +1,18 @@
 #!/usr/bin/env python3
 
+import argparse
 import json
 import shlex
 import subprocess
 
 import looseversion
 
-def govulncheck():
+def govulncheck(db):
   findings = []
-  cmd = ['govulncheck', '-json', './...']
+  cmd = ['govulncheck', '-json']
+  if db:
+    cmd += ['-db', db]
+  cmd.append('./...')
   print('+ ' + shlex.join(cmd))
   check = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=0)
   json_lines = []
@@ -36,8 +40,8 @@ def run_ext(*cmd):
   print('+ ' + shlex.join(cmd))
   subprocess.run(cmd).check_returncode()
 
-def run_once():
-  findings = govulncheck()
+def run_once(db):
+  findings = govulncheck(db)
   if not findings:
     return True
   modules = {}
@@ -61,11 +65,17 @@ def run_once():
   run_ext('go', 'mod', 'tidy')
   run_ext('go', 'mod', 'vendor')
 
-def govulnbump():
+def govulnbump(db=None):
   run_ext('go', 'mod', 'tidy')
   run_ext('go', 'mod', 'vendor')
-  while not run_once():
+  while not run_once(db):
     pass
 
+def main():
+  parser = argparse.ArgumentParser()
+  parser.add_argument('--db')
+  args = parser.parse_args()
+  govulnbump(db=args.db)
+
 if __name__ == '__main__':
-  govulnbump()
+  main()
