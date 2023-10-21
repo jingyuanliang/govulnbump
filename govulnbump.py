@@ -2,6 +2,7 @@
 
 import argparse
 import json
+import os
 import shlex
 import subprocess
 
@@ -14,7 +15,9 @@ def govulncheck(db):
     cmd += ['-db', db]
   cmd.append('./...')
   print('+ ' + shlex.join(cmd))
-  check = subprocess.Popen(cmd, stdout=subprocess.PIPE, bufsize=0)
+  env = dict(os.environ)
+  env['CGO_ENABLED'] = '0'
+  check = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, bufsize=0)
   json_lines = []
   while True:
     line = check.stdout.readline()
