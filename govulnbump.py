@@ -55,6 +55,7 @@ def run_once(db):
       mod[0].add(trace['version'])
       mod[1].add(finding['fixed_version'])
       mod[2].add(finding['osv'])
+  fresh = True
   for mod, patch in modules.items():
     av, fv, desc = map(list, patch)
     av.sort(key=looseversion.LooseVersion)
@@ -64,7 +65,11 @@ def run_once(db):
     while desc:
       print('  {}'.format(', '.join(desc[:5])))
       desc = desc[5:]
-    run_ext('go', 'get', '{}@{}'.format(mod, fv[-1]))
+    if fresh:
+      run_ext('go', 'get', '{}@{}'.format(mod, fv[-1]))
+      fresh = False
+    else:
+      print('  Not bumping now to avoid unexpected downgrading.')
   run_ext('go', 'mod', 'tidy')
   run_ext('go', 'mod', 'vendor')
 
