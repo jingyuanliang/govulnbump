@@ -57,6 +57,8 @@ def run_once(db):
       mod[2].add(finding['osv'])
   fresh = True
   for mod, patch in modules.items():
+    if mod == 'stdlib':
+      continue
     av, fv, desc = map(list, patch)
     av.sort(key=looseversion.LooseVersion)
     fv.sort(key=looseversion.LooseVersion)
