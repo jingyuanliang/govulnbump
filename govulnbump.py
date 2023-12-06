@@ -45,8 +45,6 @@ def run_ext(*cmd):
 
 def run_once(db):
   findings = govulncheck(db)
-  if not findings:
-    return True
   modules = {}
   for finding in findings:
     if finding.get('trace'):
@@ -72,6 +70,8 @@ def run_once(db):
       fresh = False
     else:
       print('  Not bumping now to avoid unexpected downgrading.')
+  if fresh:
+    return True
   run_ext('go', 'mod', 'tidy')
   run_ext('go', 'mod', 'vendor')
 
