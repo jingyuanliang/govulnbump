@@ -1,6 +1,6 @@
 ARG PYTHON_IMAGE=python:3.12
 
-FROM golang:1.21 AS golang
+FROM golang:1.22 AS golang
 
 FROM ${PYTHON_IMAGE}
 
