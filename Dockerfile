@@ -14,7 +14,7 @@ RUN chmod a+rwx /gocache
 ENV GOROOT /usr/local/go
 ENV GOPATH /go
 ENV PATH "${GOROOT}/bin:${GOPATH}/bin:${PATH}"
-RUN go install golang.org/x/vuln/cmd/govulncheck@v1.0.1
+RUN go install golang.org/x/vuln/cmd/govulncheck@v1.0.4
 ENV GOCACHE /gocache/gocache
 ENV GOMODCACHE /gocache/gomodcache
 
