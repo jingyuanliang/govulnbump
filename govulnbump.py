@@ -49,6 +49,8 @@ def run_once(db):
   for finding in findings:
     if finding.get('trace'):
       trace = finding['trace'][0]
+      if not trace.get('function'):
+        continue
       mod = modules.setdefault(trace['module'], (set(), set(), set()))
       mod[0].add(trace['version'])
       mod[1].add(finding['fixed_version'])
