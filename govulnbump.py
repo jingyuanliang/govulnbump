@@ -44,13 +44,13 @@ def run_ext(*cmd):
   print('+ ' + shlex.join(cmd))
   subprocess.run(cmd).check_returncode()
 
-def run_once(db):
+def run_once(db, skip_unused):
   findings = govulncheck(db)
   modules = {}
   for finding in findings:
     if finding.get('trace'):
       trace = finding['trace'][0]
-      if not trace.get('function'):
+      if skip_unused and not trace.get('function'):
         continue
       mod = modules.setdefault(trace['module'], (set(), set(), set()))
       mod[0].add(trace['version'])
@@ -78,10 +78,10 @@ def run_once(db):
   run_ext('go', 'mod', 'tidy')
   run_ext('go', 'mod', 'vendor')
 
-def govulnbump(db=None):
+def govulnbump(db=None, skip_unused=True):
   run_ext('go', 'mod', 'tidy')
   run_ext('go', 'mod', 'vendor')
-  while not run_once(db):
+  while not run_once(db, skip_unused):
     pass
   with open('go.mod', 'r') as f:
     gomod = f.read()
@@ -91,9 +91,10 @@ def govulnbump(db=None):
 
 def main():
   parser = argparse.ArgumentParser()
+  parser.add_argument('--all', action='store_true')
   parser.add_argument('--db')
   args = parser.parse_args()
-  govulnbump(db=args.db)
+  govulnbump(db=args.db, skip_unused=not args.all)
 
 if __name__ == '__main__':
   main()
