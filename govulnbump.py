@@ -94,6 +94,7 @@ def main():
   parser.add_argument('--all', action='store_true')
   parser.add_argument('--db')
   args = parser.parse_args()
+  print('- ' + repr(vars(args)))
   govulnbump(db=args.db, skip_unused=not args.all)
 
 if __name__ == '__main__':
