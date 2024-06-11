@@ -79,12 +79,18 @@ def run_once(db, skip_unused):
   run_ext('go', 'mod', 'vendor')
 
 def govulnbump(db=None, skip_unused=True):
+  with open('go.mod', 'r') as f:
+    gomod = f.read()
+  gover_re = re.compile('^go .+$', re.MULTILINE)
+  gover = gover_re.search(gomod)
   run_ext('go', 'mod', 'tidy')
   run_ext('go', 'mod', 'vendor')
   while not run_once(db, skip_unused):
     pass
   with open('go.mod', 'r') as f:
     gomod = f.read()
+  if gover:
+    gomod = gover_re.sub(gover.group(), gomod)
   gomod = re.sub(r'\n+toolchain .+\n+', '\n\n', gomod)
   with open('go.mod', 'w') as f:
     f.write(gomod)
