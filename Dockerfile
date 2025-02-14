@@ -1,6 +1,6 @@
 ARG PYTHON_IMAGE=python:3.12
 
-FROM golang:1.23 AS golang
+FROM golang:1.24 AS golang
 
 FROM ${PYTHON_IMAGE}
 
@@ -14,7 +14,7 @@ RUN chmod a+rwx /gocache
 ENV GOROOT /usr/local/go
 ENV GOPATH /go
 ENV PATH "${GOROOT}/bin:${GOPATH}/bin:${PATH}"
-RUN go install golang.org/x/vuln/cmd/govulncheck@v1.1.3
+RUN go install golang.org/x/vuln/cmd/govulncheck@v1.1.4
 ENV GOCACHE /gocache/gocache
 ENV GOMODCACHE /gocache/gomodcache
 
