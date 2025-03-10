@@ -81,7 +81,7 @@ def run_once(db, skip_unused):
 def govulnbump(db=None, skip_unused=True):
   with open('go.mod', 'r') as f:
     gomod = f.read()
-  gover_re = re.compile('^go .+$', re.MULTILINE)
+  gover_re = re.compile(r'^go\s+(1\.\d+).*$', re.MULTILINE)
   gover = gover_re.search(gomod)
   run_ext('go', 'mod', 'tidy')
   run_ext('go', 'mod', 'vendor')
@@ -89,8 +89,15 @@ def govulnbump(db=None, skip_unused=True):
     pass
   with open('go.mod', 'r') as f:
     gomod = f.read()
-  if gover:
-    gomod = gover_re.sub(gover.group(), gomod)
+  gover_new = gover_re.search(gomod)
+  if gover and gover_new and gover.group(1) != gover_new.group(1):
+    print('- godebug default=go' + gover.group(1))
+    gomod = gover_re.sub(r'\g<0>\ngodebug default=go' + gover.group(1), gomod)
+    with open('go.mod', 'w') as f:
+      f.write(gomod)
+    run_ext('go', 'mod', 'tidy')
+    with open('go.mod', 'r') as f:
+      gomod = f.read()
   gomod = re.sub(r'\n+toolchain .+\n+', '\n\n', gomod)
   with open('go.mod', 'w') as f:
     f.write(gomod)
