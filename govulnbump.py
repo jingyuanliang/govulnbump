@@ -17,7 +17,8 @@ def govulncheck(db):
   cmd.append('./...')
   print('+ ' + shlex.join(cmd))
   env = dict(os.environ)
-  env['CGO_ENABLED'] = '0'
+  if 'CGO_ENABLED' not in env:
+    env['CGO_ENABLED'] = '0'
   check = subprocess.Popen(cmd, env=env, stdout=subprocess.PIPE, bufsize=0)
   json_lines = []
   while True:
