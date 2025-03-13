@@ -45,7 +45,7 @@ def run_ext(*cmd):
   print('+ ' + shlex.join(cmd))
   subprocess.run(cmd).check_returncode()
 
-def run_once(db, skip_unused):
+def run_once(db, skip_unused, skip_explicit):
   findings = govulncheck(db)
   modules = {}
   for finding in findings:
@@ -58,6 +58,7 @@ def run_once(db, skip_unused):
       mod[1].add(finding['fixed_version'])
       mod[2].add(finding['osv'])
   fresh = True
+  skipped = set(skip_explicit)
   for mod, patch in modules.items():
     if mod == 'stdlib':
       continue
@@ -65,10 +66,14 @@ def run_once(db, skip_unused):
     av.sort(key=looseversion.LooseVersion)
     fv.sort(key=looseversion.LooseVersion)
     desc.sort()
+    considered = set(desc) - skipped
     print('{} ({}) => ({})'.format(mod, ', '.join(av), ', '.join(fv)))
     while desc:
       print('  {}'.format(', '.join(desc[:5])))
       desc = desc[5:]
+    if not considered:
+      print('  Not bumping because all are explicitly skipped.')
+      continue
     if fresh:
       run_ext('go', 'get', '{}@{}'.format(mod, fv[-1]))
       fresh = False
@@ -79,14 +84,14 @@ def run_once(db, skip_unused):
   run_ext('go', 'mod', 'tidy')
   run_ext('go', 'mod', 'vendor')
 
-def govulnbump(db=None, skip_unused=True):
+def govulnbump(db=None, skip_unused=True, skip_explicit=[]):
   with open('go.mod', 'r') as f:
     gomod = f.read()
   gover_re = re.compile(r'^go\s+(1\.\d+).*$', re.MULTILINE)
   gover = gover_re.search(gomod)
   run_ext('go', 'mod', 'tidy')
   run_ext('go', 'mod', 'vendor')
-  while not run_once(db, skip_unused):
+  while not run_once(db, skip_unused, skip_explicit):
     pass
   with open('go.mod', 'r') as f:
     gomod = f.read()
@@ -107,9 +112,10 @@ def main():
   parser = argparse.ArgumentParser()
   parser.add_argument('--all', action='store_true')
   parser.add_argument('--db')
+  parser.add_argument('--skip', nargs='*', default=[])
   args = parser.parse_args()
   print('- ' + repr(vars(args)))
-  govulnbump(db=args.db, skip_unused=not args.all)
+  govulnbump(db=args.db, skip_unused=not args.all, skip_explicit=args.skip)
 
 if __name__ == '__main__':
   main()
