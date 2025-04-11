@@ -51,7 +51,7 @@ def run_once(db, skip_unused, skip_explicit):
   for finding in findings:
     if finding.get('trace'):
       trace = finding['trace'][0]
-      if skip_unused and not trace.get('function'):
+      if skip_unused and not trace.get('function') and not trace['module'].startswith('golang.org/x/'):
         continue
       mod = modules.setdefault(trace['module'], (set(), set(), set()))
       mod[0].add(trace['version'])
