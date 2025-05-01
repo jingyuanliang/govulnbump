@@ -49,14 +49,15 @@ def run_once(db, skip_unused, skip_explicit):
   findings = govulncheck(db)
   modules = {}
   for finding in findings:
-    if finding.get('trace'):
+    if finding.get('trace') and finding.get('fixed_version'):
       trace = finding['trace'][0]
       if skip_unused and not trace.get('function') and not trace['module'].startswith('golang.org/x/'):
         continue
       mod = modules.setdefault(trace['module'], (set(), set(), set()))
       mod[0].add(trace['version'])
       mod[1].add(finding['fixed_version'])
-      mod[2].add(finding['osv'])
+      if finding.get('osv'):
+        mod[2].add(finding['osv'])
   fresh = True
   skipped = set(skip_explicit)
   for mod, patch in modules.items():
